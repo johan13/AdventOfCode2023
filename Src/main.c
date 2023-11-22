@@ -22,7 +22,10 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 
+#include <stdio.h>
 #include <string.h>
+#include "gfx.h"
+#include "gfx_data.h"
 
 /* USER CODE END Includes */
 
@@ -63,7 +66,7 @@ SDRAM_HandleTypeDef hsdram1;
 
 /* USER CODE BEGIN PV */
 
-uint8_t *frame_buf = (uint8_t *)0xc0000000; // Start of external RAM.
+uint8_t *overlay_frame_buf = (uint8_t *)0xc0000000; // Start of external RAM.
 
 /* USER CODE END PV */
 
@@ -120,16 +123,31 @@ int main(void)
   // Turn on LCD
   HAL_GPIO_WritePin(LCD_DISP_GPIO_Port, LCD_DISP_Pin, GPIO_PIN_SET);
 
+  // memset(overlay_frame_buf, 0, 400 * 480);
+  memset(overlay_frame_buf, 0, 2048 * 1024);
+
+  HAL_LTDC_ConfigCLUT(&hltdc, (uint32_t *)background_clut, 256, LTDC_LAYER_1);
+  HAL_LTDC_EnableCLUT(&hltdc, LTDC_LAYER_1);
+
   // Turn on backlight
   const int backlight_percent = 30;
   __HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_1, backlight_percent * PWM_PERIOD / 100);
   HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_1);
   HAL_GPIO_WritePin(BACKLIGHT_EN_GPIO_Port, BACKLIGHT_EN_Pin, GPIO_PIN_SET);
 
-  memset(frame_buf, 0, 800 * 480);
-  uint32_t clut[] = { 0x000000 };
-  HAL_LTDC_ConfigCLUT(&hltdc, clut, sizeof clut / sizeof clut[0], LTDC_LAYER_1);
-  HAL_LTDC_EnableCLUT(&hltdc, LTDC_LAYER_1);
+  draw_header();
+  printf("\n");
+  printf("          DAY 01\n");
+  printf("    123456     1234567\n");
+  printf("\n");
+  printf("          DAY 02\n");
+  printf("    99999     9876543210\n");
+  printf("\n");
+  printf("          DAY 03\n");
+  printf("    99999     9876543210\n");
+  printf("\n");
+  printf("          DAY 04\n");
+  printf("    99999     9876543210\n");
 
   /* USER CODE END 2 */
 
@@ -209,6 +227,7 @@ static void MX_LTDC_Init(void)
   /* USER CODE END LTDC_Init 0 */
 
   LTDC_LayerCfgTypeDef pLayerCfg = {0};
+  LTDC_LayerCfgTypeDef pLayerCfg1 = {0};
 
   /* USER CODE BEGIN LTDC_Init 1 */
 
@@ -242,13 +261,32 @@ static void MX_LTDC_Init(void)
   pLayerCfg.Alpha0 = 0;
   pLayerCfg.BlendingFactor1 = LTDC_BLENDING_FACTOR1_CA;
   pLayerCfg.BlendingFactor2 = LTDC_BLENDING_FACTOR2_CA;
-  pLayerCfg.FBStartAdress = 0xc0000000;
+  pLayerCfg.FBStartAdress = (uint32_t)background_image;
   pLayerCfg.ImageWidth = 800;
   pLayerCfg.ImageHeight = 480;
   pLayerCfg.Backcolor.Blue = 0;
   pLayerCfg.Backcolor.Green = 0;
   pLayerCfg.Backcolor.Red = 0;
   if (HAL_LTDC_ConfigLayer(&hltdc, &pLayerCfg, 0) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  pLayerCfg1.WindowX0 = 350;
+  pLayerCfg1.WindowX1 = 750;
+  pLayerCfg1.WindowY0 = 0;
+  pLayerCfg1.WindowY1 = 480;
+  pLayerCfg1.PixelFormat = LTDC_PIXEL_FORMAT_AL44;
+  pLayerCfg1.Alpha = 255;
+  pLayerCfg1.Alpha0 = 0;
+  pLayerCfg1.BlendingFactor1 = LTDC_BLENDING_FACTOR1_PAxCA;
+  pLayerCfg1.BlendingFactor2 = LTDC_BLENDING_FACTOR2_PAxCA;
+  pLayerCfg1.FBStartAdress = 0xc0000000;
+  pLayerCfg1.ImageWidth = 400;
+  pLayerCfg1.ImageHeight = 480;
+  pLayerCfg1.Backcolor.Blue = 0;
+  pLayerCfg1.Backcolor.Green = 0;
+  pLayerCfg1.Backcolor.Red = 0;
+  if (HAL_LTDC_ConfigLayer(&hltdc, &pLayerCfg1, 1) != HAL_OK)
   {
     Error_Handler();
   }
@@ -450,9 +488,11 @@ static void MX_GPIO_Init(void)
 
 /* USER CODE BEGIN 4 */
 
+int offset = 0;
 static void Vsync_Callback(LTDC_HandleTypeDef *hltdc)
 {
-  // TODO
+  offset = (offset + 800) % (400 * 840);
+  HAL_LTDC_SetAddress(hltdc, 0xc0000000 + offset, LTDC_LAYER_2);
 
   __HAL_LTDC_ENABLE_IT(hltdc, LTDC_IT_LI);
 }
@@ -460,7 +500,9 @@ static void Vsync_Callback(LTDC_HandleTypeDef *hltdc)
 int _write(int file, char *ptr, int len)
 {
   for (int i = 0; i < len; i++)
-    ITM_SendChar(ptr[i]);
+    draw_char(ptr[i]);
+  // for (int i = 0; i < len; i++)
+  //   ITM_SendChar(ptr[i]);
   return len;
 }
 
