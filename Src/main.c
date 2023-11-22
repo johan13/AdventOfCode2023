@@ -22,6 +22,8 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 
+#include <string.h>
+
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -37,6 +39,19 @@
 /* Private macro -------------------------------------------------------------*/
 /* USER CODE BEGIN PM */
 
+#define SDRAM_MODEREG_BURST_LENGTH_1 ((uint16_t)0x0000)
+#define SDRAM_MODEREG_BURST_LENGTH_2 ((uint16_t)0x0001)
+#define SDRAM_MODEREG_BURST_LENGTH_4 ((uint16_t)0x0002)
+#define SDRAM_MODEREG_BURST_LENGTH_8 ((uint16_t)0x0004)
+#define SDRAM_MODEREG_BURST_TYPE_SEQUENTIAL ((uint16_t)0x0000)
+#define SDRAM_MODEREG_BURST_TYPE_INTERLEAVED ((uint16_t)0x0008)
+#define SDRAM_MODEREG_CAS_LATENCY_2 ((uint16_t)0x0020)
+#define SDRAM_MODEREG_CAS_LATENCY_3 ((uint16_t)0x0030)
+#define SDRAM_MODEREG_OPERATING_MODE_STANDARD ((uint16_t)0x0000)
+#define SDRAM_MODEREG_WRITEBURST_MODE_PROGRAMMED ((uint16_t)0x0000)
+#define SDRAM_MODEREG_WRITEBURST_MODE_SINGLE ((uint16_t)0x0200)
+#define SDRAM_REFRESH_COUNT ((uint32_t)0x0000056a) // 90 MHz
+
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
@@ -48,6 +63,8 @@ SDRAM_HandleTypeDef hsdram1;
 
 /* USER CODE BEGIN PV */
 
+uint8_t *frame_buf = (uint8_t *)0xc0000000; // Start of external RAM.
+
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -57,6 +74,8 @@ static void MX_FMC_Init(void);
 static void MX_LTDC_Init(void);
 static void MX_TIM3_Init(void);
 /* USER CODE BEGIN PFP */
+
+static void Vsync_Callback(LTDC_HandleTypeDef *hltdc);
 
 /* USER CODE END PFP */
 
@@ -97,6 +116,20 @@ int main(void)
   MX_LTDC_Init();
   MX_TIM3_Init();
   /* USER CODE BEGIN 2 */
+
+  // Turn on LCD
+  HAL_GPIO_WritePin(LCD_DISP_GPIO_Port, LCD_DISP_Pin, GPIO_PIN_SET);
+
+  // Turn on backlight
+  const int backlight_percent = 30;
+  __HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_1, backlight_percent * PWM_PERIOD / 100);
+  HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_1);
+  HAL_GPIO_WritePin(BACKLIGHT_EN_GPIO_Port, BACKLIGHT_EN_Pin, GPIO_PIN_SET);
+
+  memset(frame_buf, 0, 800 * 480);
+  uint32_t clut[] = { 0x000000 };
+  HAL_LTDC_ConfigCLUT(&hltdc, clut, sizeof clut / sizeof clut[0], LTDC_LAYER_1);
+  HAL_LTDC_EnableCLUT(&hltdc, LTDC_LAYER_1);
 
   /* USER CODE END 2 */
 
@@ -221,6 +254,9 @@ static void MX_LTDC_Init(void)
   }
   /* USER CODE BEGIN LTDC_Init 2 */
 
+  HAL_LTDC_ProgramLineEvent(&hltdc, 512); // 480 + 29 + 3 for back porch etc
+  hltdc.LineEventCallback = Vsync_Callback;
+
   /* USER CODE END LTDC_Init 2 */
 
 }
@@ -328,6 +364,42 @@ static void MX_FMC_Init(void)
 
   /* USER CODE BEGIN FMC_Init 2 */
 
+  FMC_SDRAM_CommandTypeDef cmd_clk_enable = {
+    .CommandMode = FMC_SDRAM_CMD_CLK_ENABLE,
+    .CommandTarget = FMC_SDRAM_CMD_TARGET_BANK1,
+    .AutoRefreshNumber = 1,
+    .ModeRegisterDefinition = 0
+  };
+  FMC_SDRAM_CommandTypeDef cmd_precharge_all = {
+    .CommandMode = FMC_SDRAM_CMD_PALL,
+    .CommandTarget = FMC_SDRAM_CMD_TARGET_BANK1,
+    .AutoRefreshNumber = 1,
+    .ModeRegisterDefinition = 0
+  };
+  FMC_SDRAM_CommandTypeDef cmd_auto_refresh = {
+    .CommandMode = FMC_SDRAM_CMD_AUTOREFRESH_MODE,
+    .CommandTarget = FMC_SDRAM_CMD_TARGET_BANK1,
+    .AutoRefreshNumber = 4,
+    .ModeRegisterDefinition = 0
+  };
+  FMC_SDRAM_CommandTypeDef cmd_mode = {
+    .CommandMode = FMC_SDRAM_CMD_LOAD_MODE,
+    .CommandTarget = FMC_SDRAM_CMD_TARGET_BANK1,
+    .AutoRefreshNumber = 1,
+    .ModeRegisterDefinition = SDRAM_MODEREG_BURST_LENGTH_2 |
+                              SDRAM_MODEREG_BURST_TYPE_SEQUENTIAL |
+                              SDRAM_MODEREG_CAS_LATENCY_3 |
+                              SDRAM_MODEREG_OPERATING_MODE_STANDARD |
+                              SDRAM_MODEREG_WRITEBURST_MODE_SINGLE
+  };
+
+  HAL_SDRAM_SendCommand(&hsdram1, &cmd_clk_enable, 0x1000);
+  HAL_Delay(1);
+  HAL_SDRAM_SendCommand(&hsdram1, &cmd_precharge_all, 0x1000);
+  HAL_SDRAM_SendCommand(&hsdram1, &cmd_auto_refresh, 0x1000);
+  HAL_SDRAM_SendCommand(&hsdram1, &cmd_mode, 0x1000);
+  HAL_SDRAM_ProgramRefreshRate(&hsdram1, SDRAM_REFRESH_COUNT);
+
   /* USER CODE END FMC_Init 2 */
 }
 
@@ -377,6 +449,20 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
+
+static void Vsync_Callback(LTDC_HandleTypeDef *hltdc)
+{
+  // TODO
+
+  __HAL_LTDC_ENABLE_IT(hltdc, LTDC_IT_LI);
+}
+
+int _write(int file, char *ptr, int len)
+{
+  for (int i = 0; i < len; i++)
+    ITM_SendChar(ptr[i]);
+  return len;
+}
 
 /* USER CODE END 4 */
 
