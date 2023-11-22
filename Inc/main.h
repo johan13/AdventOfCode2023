@@ -49,6 +49,8 @@ extern "C" {
 
 /* USER CODE END EM */
 
+void HAL_TIM_MspPostInit(TIM_HandleTypeDef *htim);
+
 /* Exported functions prototypes ---------------------------------------------*/
 void Error_Handler(void);
 
@@ -57,6 +59,15 @@ void Error_Handler(void);
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
+#define PWM_PERIOD 8499
+#define LCD_DISP_Pin GPIO_PIN_6
+#define LCD_DISP_GPIO_Port GPIOF
+#define RED_LED_Pin GPIO_PIN_8
+#define RED_LED_GPIO_Port GPIOF
+#define BACKLIGHT_EN_Pin GPIO_PIN_7
+#define BACKLIGHT_EN_GPIO_Port GPIOA
+#define LCD_DIM_PWM_Pin GPIO_PIN_4
+#define LCD_DIM_PWM_GPIO_Port GPIOB
 
 /* USER CODE BEGIN Private defines */
 
