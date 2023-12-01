@@ -6,7 +6,11 @@
 #include "problems.h"
 #include "../gfx.h"
 
+std::string day01p1();
+std::string day01p2();
+
 std::vector<std::tuple<std::function<std::string()>, std::function<std::string()>>> days{
+    {day01p1, day01p2},
 };
 
 void do_problems()

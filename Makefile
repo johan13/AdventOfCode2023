@@ -66,6 +66,7 @@ Src/gfx.c \
 Src/syscalls.c
 
 CXX_SOURCES = \
+Src/problems/day01.cc \
 Src/problems/problems.cc
 
 # ASM sources
