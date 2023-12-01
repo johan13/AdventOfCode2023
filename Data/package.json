@@ -1,0 +1,16 @@
+{
+    "name": "aoc23-data",
+    "scripts": {
+        "start": "node -r ts-node/register main.ts > ../Src/data.c"
+    },
+    "license": "ISC",
+    "dependencies": {
+        "@types/lodash.range": "^3.2.9",
+        "@types/node": "^20.10.1",
+        "@types/pngjs": "^6.0.4",
+        "lodash.range": "^3.2.0",
+        "pngjs": "^7.0.0",
+        "ts-node": "^10.9.1",
+        "typescript": "^5.3.2"
+    }
+}
