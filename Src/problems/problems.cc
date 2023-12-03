@@ -8,9 +8,12 @@
 
 std::string day01p1();
 std::string day01p2();
+std::string day02p1();
+std::string day02p2();
 
 std::vector<std::tuple<std::function<std::string()>, std::function<std::string()>>> days{
     {day01p1, day01p2},
+    {day02p1, day02p2},
 };
 
 void do_problems()
