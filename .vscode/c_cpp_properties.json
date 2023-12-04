@@ -14,8 +14,8 @@
             ],
             "compilerPath": "/opt/arm-gnu-toolchain-13.2.Rel1-x86_64-arm-none-eabi/bin/arm-none-eabi-gcc",
             "cStandard": "c17",
-            "cppStandard": "gnu++17",
-            "intelliSenseMode": "linux-gcc-x64"
+            "cppStandard": "gnu++23",
+            "intelliSenseMode": "linux-gcc-arm"
         }
     ],
     "version": 4

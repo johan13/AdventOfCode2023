@@ -4,6 +4,8 @@
 #include <tuple>
 #include <vector>
 
+namespace day01 {
+
 static std::vector<std::tuple<const char *, int>> textual{
     {"one", 1}, {"two", 2}, {"three", 3}, {"four", 4}, {"five", 5},
     {"six", 6}, {"seven", 7}, {"eight", 8}, {"nine", 9},
@@ -55,12 +57,14 @@ static std::string solution(bool look_for_text)
     return std::to_string(answer);
 }
 
-std::string day01p1()
+std::string part1()
 {
     return solution(false); // 54605
 }
 
-std::string day01p2()
+std::string part2()
 {
     return solution(true); // 55429
+}
+
 }

@@ -6,17 +6,14 @@
 #include "problems.h"
 #include "../gfx.h"
 
-std::string day01p1();
-std::string day01p2();
-std::string day02p1();
-std::string day02p2();
-std::string day03p1();
-std::string day03p2();
+namespace day01 { std::string part1(); std::string part2(); }
+namespace day02 { std::string part1(); std::string part2(); }
+namespace day03 { std::string part1(); std::string part2(); }
 
 std::vector<std::tuple<std::function<std::string()>, std::function<std::string()>>> days{
-    {day01p1, day01p2},
-    {day02p1, day02p2},
-    {day03p1, day03p2},
+    {day01::part1, day01::part2},
+    {day02::part1, day02::part2},
+    {day03::part1, day03::part2},
 };
 
 void do_problems()

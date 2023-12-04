@@ -5,6 +5,8 @@
 #include <string>
 #include <vector>
 
+namespace day03 {
+
 struct schematic_t {
     int width;
     int height;
@@ -26,7 +28,7 @@ static struct schematic_t get_input()
     return schematic;
 }
 
-static bool is_part_number(struct schematic_t schematic, int x0, int x1, int y0)
+static bool is_part_number(const struct schematic_t &schematic, int x0, int x1, int y0)
 {
     for (int y = y0 - 1; y <= y0 + 1; y++) {
         if (y >= 0 && y < schematic.height) {
@@ -41,7 +43,7 @@ static bool is_part_number(struct schematic_t schematic, int x0, int x1, int y0)
     return false;
 }
 
-static int get_number_at(struct schematic_t schematic, int x, int y)
+static int get_number_at(const struct schematic_t &schematic, int x, int y)
 {
     const char *row = &schematic.data[y * schematic.width];
     while (x > 0 && std::isdigit(row[x - 1]))
@@ -53,7 +55,7 @@ static int get_number_at(struct schematic_t schematic, int x, int y)
     return number;
 }
 
-static std::vector<int> get_adjacent_numbers(struct schematic_t schematic, int x0, int y0)
+static std::vector<int> get_adjacent_numbers(const struct schematic_t &schematic, int x0, int y0)
 {
     std::vector<int> numbers;
     for (int y = std::max(0, y0 - 1); y < std::min(schematic.height, y0 + 2); y++)
@@ -73,7 +75,7 @@ static std::vector<int> get_adjacent_numbers(struct schematic_t schematic, int x
     return numbers;
 }
 
-std::string day03p1() {
+std::string part1() {
     auto schematic = get_input();
     int sum = 0;
     for (int y = 0; y < schematic.height; y++) {
@@ -93,7 +95,7 @@ std::string day03p1() {
     return std::to_string(sum); // 525181
 }
 
-std::string day03p2()
+std::string part2()
 {
     auto schematic = get_input();
     int sum = 0;
@@ -109,4 +111,6 @@ std::string day03p2()
     }
 
     return std::to_string(sum); // 84289137
+}
+
 }

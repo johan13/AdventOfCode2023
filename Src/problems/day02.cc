@@ -2,9 +2,11 @@
 #include <cstring>
 #include <fstream>
 #include <numeric>
-#include <regex>
 #include <string>
 #include <vector>
+#include "common.h"
+
+namespace day02 {
 
 struct subset_t {
     int red;
@@ -16,33 +18,6 @@ struct input_t {
     int game;
     std::vector<struct subset_t> subsets;
 };
-
-static std::vector<std::string> do_regex_match(const std::string &regex, const std::string &input)
-{
-    std::smatch match;
-    std::regex_match(input, match, std::regex(regex));
-    std::vector<std::string> groups;
-
-    for (std::size_t i = 1; i < match.size(); i++) {
-        groups.push_back(match[i].str());
-    }
-
-    return groups;
-}
-
-static std::vector<std::string> split_string(const std::string &input, const char *separator)
-{
-    const std::size_t separator_length = std::strlen(separator);
-    std::vector<std::string> parts;
-    for (std::size_t start = 0;;) {
-        std::size_t end = input.find(separator, start);
-        parts.push_back(input.substr(start, end - start));
-        if (end == std::string::npos)
-            return parts;
-
-        start = end + separator_length;
-    }
-}
 
 static input_t parse_line(const std::string &line) {
     input_t input;
@@ -77,7 +52,7 @@ static std::vector<struct input_t> read_input() {
     return input;
 }
 
-std::string day02p1() {
+std::string part1() {
     auto input = read_input();
 
     int answer = std::accumulate(
@@ -95,7 +70,7 @@ std::string day02p1() {
 }
 
 
-std::string day02p2() {
+std::string part2() {
     auto input = read_input();
 
     int answer = std::accumulate(
@@ -110,4 +85,6 @@ std::string day02p2() {
         });
 
     return std::to_string(answer); // 76008
+}
+
 }

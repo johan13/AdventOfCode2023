@@ -133,7 +133,12 @@ int main(void)
   HAL_LTDC_EnableCLUT(&hltdc, LTDC_LAYER_1);
 
   // Turn on backlight
+  #ifdef DEBUG
+  const int backlight_percent = 30;
+  #else
   const int backlight_percent = 60;
+  #endif
+
   __HAL_TIM_SET_COMPARE(&htim3, TIM_CHANNEL_1, backlight_percent * PWM_PERIOD / 100);
   HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_1);
   HAL_GPIO_WritePin(BACKLIGHT_EN_GPIO_Port, BACKLIGHT_EN_Pin, GPIO_PIN_SET);
@@ -485,7 +490,7 @@ static void MX_GPIO_Init(void)
 
 /* USER CODE BEGIN 4 */
 
-int top = 200; // First row of overlay is at this row of the screen.
+int top = 100; // First row of overlay is at this row of the screen.
 
 static void Vsync_Callback(LTDC_HandleTypeDef *hltdc)
 {

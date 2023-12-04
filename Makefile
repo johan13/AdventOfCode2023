@@ -66,6 +66,7 @@ Src/gfx.c \
 Src/syscalls.c
 
 CXX_SOURCES = \
+Src/problems/common.cc \
 Src/problems/day01.cc \
 Src/problems/day02.cc \
 Src/problems/day03.cc \
@@ -142,7 +143,7 @@ ASFLAGS = $(MCU) $(AS_DEFS) $(AS_INCLUDES) $(OPT) -Wall -fdata-sections -ffuncti
 CFLAGS += $(MCU) $(C_DEFS) $(C_INCLUDES) $(OPT) -Wall -fdata-sections -ffunction-sections
 
 ifeq ($(DEBUG), 1)
-CFLAGS += -g -gdwarf-2
+CFLAGS += -g -gdwarf-2 -DDEBUG
 endif
 
 
@@ -199,11 +200,14 @@ $(BUILD_DIR)/%.bin: $(BUILD_DIR)/%.elf | $(BUILD_DIR)
 $(BUILD_DIR):
 	mkdir $@		
 
+Src/data.c: $(wildcard Data/*)
+	(cd Data; npm -s start)
+
 #######################################
 # clean up
 #######################################
 clean:
-	-rm -fR $(BUILD_DIR)
+	-rm -fR $(BUILD_DIR) Src/data.c
   
 #######################################
 # dependencies
