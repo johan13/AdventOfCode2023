@@ -74,7 +74,7 @@ void Error_Handler(void);
 #define DISPLAY_WIDTH (800)
 #define DISPLAY_HEIGHT (480)
 #define OVERLAY_WIDTH (400)
-#define OVERLAY_HEIGHT (400) // TODO: Increase when needed. (95 + n * 60 ?)
+#define OVERLAY_HEIGHT (95 + 60 * 7) // 95px header + 60px per day
 #define BACKGROUND_FRAME_BUF ((uint8_t *)0xc0000000) // Start of 2 MiB external SDRAM
 #define BACKGROUND_FRAME_BUF_SIZE (DISPLAY_WIDTH * DISPLAY_HEIGHT)
 #define OVERLAY_FRAME_BUF (BACKGROUND_FRAME_BUF + BACKGROUND_FRAME_BUF_SIZE)

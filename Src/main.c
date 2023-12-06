@@ -490,7 +490,7 @@ static void MX_GPIO_Init(void)
 
 /* USER CODE BEGIN 4 */
 
-int top = 100; // First row of overlay is at this row of the screen.
+int top = 0; // First row of overlay is at this row of the screen.
 
 static void Vsync_Callback(LTDC_HandleTypeDef *hltdc)
 {
