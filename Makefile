@@ -156,6 +156,7 @@ endif
 # Generate dependency information
 CFLAGS += -MMD -MP -MF"$(@:%.o=%.d)"
 
+CXXFLAGS = $(CFLAGS) -std=c++23
 
 #######################################
 # LDFLAGS
@@ -188,7 +189,7 @@ $(BUILD_DIR)/%.o: %.c Makefile | $(BUILD_DIR)
 	$(CC) -c $(CFLAGS) -Wa,-a,-ad,-alms=$(BUILD_DIR)/$(notdir $(<:.c=.lst)) $< -o $@
 
 $(BUILD_DIR)/%.o: %.cc Makefile | $(BUILD_DIR) 
-	$(CXX) -c $(CFLAGS) -Wa,-a,-ad,-alms=$(BUILD_DIR)/$(notdir $(<:.cc=.lst)) $< -o $@
+	$(CXX) -c $(CXXFLAGS) -Wa,-a,-ad,-alms=$(BUILD_DIR)/$(notdir $(<:.cc=.lst)) $< -o $@
 
 $(BUILD_DIR)/%.o: %.s Makefile | $(BUILD_DIR)
 	$(AS) -c $(CFLAGS) $< -o $@
@@ -209,12 +210,17 @@ $(BUILD_DIR):
 Src/data.c: $(wildcard Data/*)
 	(cd Data; npm -s start)
 
+flash: $(BUILD_DIR)/$(TARGET).bin
+	st-flash --connect-under-reset write $(BUILD_DIR)/$(TARGET).bin 0x8000000
+
 #######################################
 # clean up
 #######################################
 clean:
 	-rm -fR $(BUILD_DIR) Src/data.c
-  
+
+.PHONY: clean flash
+
 #######################################
 # dependencies
 #######################################

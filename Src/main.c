@@ -67,7 +67,7 @@ SDRAM_HandleTypeDef hsdram1;
 
 /* USER CODE BEGIN PV */
 
-static int vsync_count;
+int vsync_count;
 
 /* USER CODE END PV */
 
@@ -143,13 +143,7 @@ int main(void)
   HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_1);
   HAL_GPIO_WritePin(BACKLIGHT_EN_GPIO_Port, BACKLIGHT_EN_Pin, GPIO_PIN_SET);
 
-  fprintf(stderr, "%d kiB SDRAM available.\nStarting problems...\n", FREE_SDRAM_SIZE / 1024);
-  int start_count = vsync_count;
-
   do_problems();
-
-  int duration_ms = (vsync_count - start_count) * 25;
-  fprintf(stderr, "All problems solved in %d ms.\n", duration_ms);
 
   /* USER CODE END 2 */
 

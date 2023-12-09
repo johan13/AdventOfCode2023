@@ -1,11 +1,13 @@
 #include <algorithm>
+#include <cstdio>
 #include <functional>
 #include <string>
-#include <stdio.h>
 #include <tuple>
 #include <vector>
 #include "problems.h"
 #include "../gfx.h"
+
+extern int vsync_count;
 
 namespace day01 { std::string part1(); std::string part2(); }
 namespace day02 { std::string part1(); std::string part2(); }
@@ -33,23 +35,31 @@ void do_problems()
 {
     draw_header();
 
-    for (int i = 0; i < (int)days.size(); i++)
-    {
+    fprintf(stderr, "Starting problems...\n");
+    int start_count = vsync_count;
+    int prev_count = start_count;
+    for (int i = 0; i < (int)days.size(); i++) {
         printf("\n");
         set_x_pos(155);
         printf("DAY %02d\n", i + 1);
 
-        auto [p1, p2] = days[i];
+        auto [part1, part2] = days[i];
 
-        std::string answer1 = p1();
+        std::string answer1 = part1();
         int width1 = width_of_string(answer1.c_str());
-        set_x_pos(std::max(0, 100 - width1 / 2));
+        set_x_pos(std::max(100 - width1 / 2, 0));
         printf("%s", answer1.c_str());
-        fflush(stdout);
+        fflush(stdout); // No newline, so we must flush before set_x_pos.
 
-        std::string answer2 = p2();
+        std::string answer2 = part2();
         int width2 = width_of_string(answer2.c_str());
         set_x_pos(std::min(300 - width2 / 2, 400 - width2));
         printf("%s\n", answer2.c_str());
+
+        int end_count = vsync_count;
+        fprintf(stderr, "Solved day %02d in %d ms.\n", i + 1, (end_count - prev_count) * 25);
+        prev_count = end_count;
     }
+
+    fprintf(stderr, "Solved all problems in %d ms.\n", (prev_count - start_count) * 25);
 }
