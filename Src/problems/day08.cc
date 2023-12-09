@@ -1,93 +1,66 @@
-#include <algorithm>
 #include <cstdint>
 #include <fstream>
 #include <map>
+#include <numeric>
 #include <string>
-#include <tuple>
-#include <vector>
+#include <utility>
 
 namespace day08 {
 
-typedef std::map<std::string, std::pair<std::string, std::string>> Map;
+struct Input { 
+    std::string instructions; 
+    std::map<std::string, std::pair<std::string, std::string>> map;
+};
 
-static std::tuple<std::string, Map> get_input()
+static Input get_input()
 {
     std::ifstream file("input08.txt");
-    std::string instructions;
-    std::getline(file, instructions);
+    Input input;
+    std::getline(file, input.instructions);
 
-    Map map;
     std::string line;
     std::getline(file, line); // Skip empty line
     for (std::getline(file, line); !file.eof(); std::getline(file, line))
-        map[line.substr(0, 3)] = std::make_pair(line.substr(7, 3), line.substr(12, 3));
+        input.map[line.substr(0, 3)] = std::make_pair(line.substr(7, 3), line.substr(12, 3));
 
-    return {instructions, map};
+    return input;
 }
 
 std::string part1()
 {
-    auto [instructions, map] = get_input();
-
+    Input input = get_input();
     int step = 0;
     for (std::string pos = "AAA"; pos != "ZZZ"; step++) {
-        char c = instructions[step % instructions.length()];
-        pos = (c == 'L' ? map[pos].first : map[pos].second);
+        char c = input.instructions[step % input.instructions.length()];
+        pos = (c == 'L' ? input.map[pos].first : input.map[pos].second);
     }
 
     return std::to_string(step); // 17287
 }
 
-struct Periodicity {
-    int first;
-    int period;
-};
-
-static Periodicity find_periodicity(const std::string &instructions, const Map &map, std::string pos)
+static int get_path_length(const Input &input, const std::string &start)
 {
-    std::vector<int> step_no_at_z;
-    for (int step = 0;;) {
-        char c = instructions[step % instructions.length()];
-        pos = (c == 'L' ? map.at(pos).first : map.at(pos).second);
-        ++step;
-        if (pos[2] == 'Z') {
-            step_no_at_z.push_back(step);
-
-            // In general it is not enough to have reached Z twice to know the period, but with the
-            // provided input (sample and real) this works.
-            if (step_no_at_z.size() == 2)
-                return {step_no_at_z[0], step_no_at_z[1] - step_no_at_z[0]};
-        }
+    int step = 0;
+    for (const std::string *pos = &start; (*pos)[2] != 'Z'; ++step) {
+        char c = input.instructions[step % input.instructions.length()];
+        pos = c == 'L' ? &input.map.at(*pos).first : &input.map.at(*pos).second;
     }
+
+    return step;
 }
 
 std::string part2()
 {
-    auto [instructions, map] = get_input();
-
-    // For each path, figure out at what step numbers it is at ??Z. (step = first + N * period)
-    std::vector<Periodicity> periodicities;
-    for (auto node : map) {
+    // It turns out that the input is such that we reach ??Z after N, 2N, 3N... steps.
+    // We just need to find the least common multiple of the path lengths from ??A to ??Z.
+    Input input = get_input();
+    uint64_t answer = 1;
+    for (const auto &node : input.map) {
         if (node.first[2] == 'A')
-            periodicities.push_back(find_periodicity(instructions, map, node.first));
+            answer = std::lcm(answer, get_path_length(input, node.first));
     }
 
-    // Iterate over the paths and find a new first step (called step) and period at which all paths
-    // considered so for are at ??Z. When all paths have been considered step is the answer.
-    int64_t step = periodicities.front().first;
-    int64_t period = periodicities.front().period;
-    for (auto it = periodicities.begin() + 1;; ++it) {
-        while ((step - it->first) % it->period != 0)
-            step += period;
-        if (it + 1 == periodicities.end())
-            break;
-        int64_t next = step + period;
-        while ((next - it->first) % it->period)
-            next += period;
-        period = next - step;
-    }
-
-    return std::to_string(step); // 18625484023687
+    return std::to_string(answer); // 18625484023687
 }
 
 }
