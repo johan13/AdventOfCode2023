@@ -77,6 +77,7 @@ Src/problems/day07.cc \
 Src/problems/day08.cc \
 Src/problems/day09.cc \
 Src/problems/day10.cc \
+Src/problems/day11.cc \
 Src/problems/problems.cc
 
 # ASM sources
@@ -157,7 +158,7 @@ endif
 # Generate dependency information
 CFLAGS += -MMD -MP -MF"$(@:%.o=%.d)"
 
-CXXFLAGS = $(CFLAGS) -std=c++23
+CXXFLAGS = $(CFLAGS) -std=c++23 -Wno-psabi
 
 #######################################
 # LDFLAGS
