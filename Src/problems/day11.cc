@@ -7,12 +7,9 @@
 
 namespace day11 {
 
-struct Pos {
-    int64_t x;
-    int64_t y;
-};
+struct Pos { int64_t x; int64_t y; };
 
-static auto solution(int factor)
+static auto get_input()
 {
     std::vector<Pos> galaxies;
     std::ifstream file("input11.txt");
@@ -22,27 +19,36 @@ static auto solution(int factor)
             galaxies.push_back({ x, y });
     }
 
-    int64_t previous = 0;
-    int64_t stretch = 0;
-    for (Pos &g : galaxies) {
-        stretch += std::max(0ll, g.y - previous - 1) * (factor - 1);
-        previous = g.y;
-        g.y += stretch;
-    }
+    return galaxies;
+}
 
-    std::sort(galaxies.begin(), galaxies.end(), [](const Pos &a, const Pos &b) { return a.x < b.x; });
-    previous = 0;
-    stretch = 0;
-    for (Pos &g : galaxies) {
-        stretch += std::max(0ll, g.x - previous - 1) * (factor - 1);
-        previous = g.x;
-        g.x += stretch;
+template<int64_t Pos::*axis>
+static void expand(std::vector<Pos> &sorted_galaxies, int factor)
+{
+    int64_t previous_coord = 0, expand_amount = 0;
+    for (Pos &galaxy : sorted_galaxies) {
+        expand_amount += std::max(0ll, galaxy.*axis - previous_coord - 1) * (factor - 1);
+        previous_coord = galaxy.*axis;
+        galaxy.*axis += expand_amount;
     }
+}
+
+static constexpr int64_t manhattan(const Pos &a, const Pos &b)
+{
+    return std::abs(a.x - b.x) + std::abs(a.y - b.y);
+}
+
+static auto solution(int factor)
+{
+    auto galaxies = get_input();
+    expand<&Pos::y>(galaxies, factor);
+    std::ranges::sort(galaxies, [](const Pos &a, const Pos &b) { return a.x < b.x; });
+    expand<&Pos::x>(galaxies, factor);
 
     int64_t answer = 0;
     for (size_t i = 1; i < galaxies.size(); ++i) {
         for (size_t j = 0; j < i; ++j)
-            answer += std::abs(galaxies[i].x - galaxies[j].x) + std::abs(galaxies[i].y - galaxies[j].y);
+            answer += manhattan(galaxies[i], galaxies[j]);
     }
 
     return std::to_string(answer);
