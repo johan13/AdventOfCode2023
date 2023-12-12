@@ -78,6 +78,7 @@ Src/problems/day08.cc \
 Src/problems/day09.cc \
 Src/problems/day10.cc \
 Src/problems/day11.cc \
+Src/problems/day12.cc \
 Src/problems/problems.cc
 
 # ASM sources
