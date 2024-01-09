@@ -28,6 +28,7 @@ namespace day16 { std::string part1(); std::string part2(); }
 namespace day17 { std::string part1(); std::string part2(); }
 namespace day18 { std::string part1(); std::string part2(); }
 namespace day19 { std::string part1(); std::string part2(); }
+namespace day20 { std::string part1(); std::string part2(); }
 
 std::vector<std::tuple<std::function<std::string()>, std::function<std::string()>>> days{
     {day01::part1, day01::part2},
@@ -49,6 +50,7 @@ std::vector<std::tuple<std::function<std::string()>, std::function<std::string()
     {day17::part1, day17::part2},
     {day18::part1, day18::part2},
     {day19::part1, day19::part2},
+    {day20::part1, day20::part2},
 };
 
 void do_problems()
